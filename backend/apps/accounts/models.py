@@ -23,42 +23,16 @@ class User(AbstractBaseUser, PermissionsMixin):
         editable=False,
     )
 
-    email = models.EmailField(
-        unique=True,
-        verbose_name="ایمیل",
-    )
+    email = models.EmailField(unique=True)
+    
+    first_name = models.CharField( max_length=150, blank=True)
+    last_name = models.CharField(max_length=150, blank=True)
 
-    first_name = models.CharField(
-        max_length=150,
-        blank=True,
-        verbose_name="نام",
-    )
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+    is_email_verified = models.BooleanField(default=False)
 
-    last_name = models.CharField(
-        max_length=150,
-        blank=True,
-        verbose_name="نام خانوادگی",
-    )
-
-    is_active = models.BooleanField(
-        default=True,
-        verbose_name="فعال",
-    )
-
-    is_staff = models.BooleanField(
-        default=False,
-        verbose_name="کارمند",
-    )
-
-    is_email_verified = models.BooleanField(
-        default=False,
-        verbose_name="ایمیل تأیید شده",
-    )
-
-    date_joined = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name="تاریخ عضویت",
-    )
+    date_joined = models.DateTimeField(auto_now_add=True)
 
     objects = UserManager()
 
@@ -66,8 +40,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = []
 
     class Meta:
-        verbose_name = "کاربر"
-        verbose_name_plural = "کاربران"
         ordering = ["-date_joined"]
 
     def __str__(self):
