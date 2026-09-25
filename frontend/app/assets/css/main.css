@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+/* FixBase theme for Tailwind CSS v4 — light + dark */
+
+/* Dark mode is controlled by class="dark" on <html> */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* 1) Raw palette */
+@theme {
+  /* Accent: teal */
+  --color-brand-50: #f0fdfa;
+  --color-brand-100: #ccfbf1;
+  --color-brand-200: #99f6e4;
+  --color-brand-300: #5eead4;
+  --color-brand-400: #2dd4bf;
+  --color-brand-500: #14b8a6;
+  --color-brand-600: #0d9488;
+  --color-brand-700: #0f766e;
+  --color-brand-800: #115e59;
+  --color-brand-900: #134e4a;
+  --color-brand-950: #042f2e;
+
+  /* Primary + neutrals: slate */
+  --color-ink-50: #f8fafc;
+  --color-ink-100: #f1f5f9;
+  --color-ink-200: #e2e8f0;
+  --color-ink-300: #cbd5e1;
+  --color-ink-400: #94a3b8;
+  --color-ink-500: #64748b;
+  --color-ink-600: #475569;
+  --color-ink-700: #334155;
+  --color-ink-800: #1e293b;
+  --color-ink-900: #0f172a;
+  --color-ink-950: #020617;
+
+  /* Status */
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #38bdf8;
+
+  /* Fonts */
+  --font-sans: "Inter", "Vazirmatn", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-fa: "Vazirmatn", "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --tracking-logo: -0.03em;
+}
+
+/* 2) Semantic tokens: light (default) */
+:root {
+  --background: var(--color-ink-50);
+  --surface: #ffffff;
+  --surface-hover: var(--color-ink-100);
+  --border: var(--color-ink-200);
+  --foreground: var(--color-ink-900);
+  --muted: var(--color-ink-500);
+  --accent: var(--color-brand-500);
+  --accent-hover: var(--color-brand-600);
+  --accent-foreground: var(--color-ink-900);
+  --link: var(--color-brand-700);
+  --code-bg: var(--color-ink-900);
+  --code-fg: var(--color-ink-100);
+  --ring: var(--color-brand-500);
+}
+
+/* 3) Semantic tokens: dark */
+.dark {
+  --background: var(--color-ink-950);
+  --surface: var(--color-ink-900);
+  --surface-hover: var(--color-ink-800);
+  --border: var(--color-ink-800);
+  --foreground: var(--color-ink-100);
+  --muted: var(--color-ink-400);
+  --accent: var(--color-brand-400);
+  --accent-hover: var(--color-brand-300);
+  --accent-foreground: var(--color-ink-950);
+  --link: var(--color-brand-400);
+  --code-bg: var(--color-ink-800);
+  --code-fg: var(--color-ink-100);
+  --ring: var(--color-brand-400);
+}
+
+/* 4) Expose semantic tokens as utilities (bg-background, text-muted, ...) */
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-border: var(--border);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-link: var(--link);
+  --color-code-bg: var(--code-bg);
+  --color-code-fg: var(--code-fg);
+  --color-ring: var(--ring);
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+  }
+  * {
+    border-color: var(--border);
+  }
+}
