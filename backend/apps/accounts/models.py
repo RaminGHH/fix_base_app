@@ -20,9 +20,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     Authentication identifier:
         email
     """
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name=_('ID'))
 
-    email = models.EmailField(unique=True)
+    email = models.EmailField(unique=True, verbose_name=_('Email'))
     
     first_name = models.CharField(max_length=150, blank=True, verbose_name=_('First Name'))
     last_name = models.CharField(max_length=150, blank=True, verbose_name=_('Last Name'))
@@ -30,8 +30,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True, verbose_name=_('Is Active'))
     is_staff = models.BooleanField(default=False, verbose_name=_('Is Admin'))
     
-    is_email_verified = models.BooleanField(default=False)
-    date_joined = models.DateTimeField(auto_now_add=True)
+    is_email_verified = models.BooleanField(default=False,verbose_name=_('Is email Verified'))
+    date_joined = models.DateTimeField(auto_now_add=True, verbose_name=_('Data joined'))
 
     objects = UserManager()
     USERNAME_FIELD = "email"
