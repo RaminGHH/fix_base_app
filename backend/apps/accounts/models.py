@@ -22,7 +22,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name=_('ID'))
 
-    email = models.EmailField(unique=True, verbose_name=_('Email'))
+    email = models.EmailField(verbose_name=_('Email'))
     
     first_name = models.CharField(max_length=150, blank=True, verbose_name=_('First Name'))
     last_name = models.CharField(max_length=150, blank=True, verbose_name=_('Last Name'))
