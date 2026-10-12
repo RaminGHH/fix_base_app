@@ -133,57 +133,67 @@ class ProfileSerializer(serializers.ModelSerializer):
     """
     User profile representation.
     """
-
     user = UserSerializer(read_only=True)
 
     class Meta:
         model = Profile
         fields = (
+            "id"
             "user",
             "avatar",
             "bio",
+            "default_page_size",
             "created_at",
             "updated_at",
         )
 
-        read_only_fields = (
-            "user",
-            "created_at",
-            "updated_at",
-        )
+        read_only_fields = fields
 
 
 class ProfileUpdateSerializer(serializers.ModelSerializer):
     """
     Update profile and basic user information.
     """
-
     first_name = serializers.CharField(
         source="user.first_name",
+        max_length=150,
         required=False,
         allow_blank=True,
     )
 
     last_name = serializers.CharField(
         source="user.last_name",
+        max_length=150,
         required=False,
         allow_blank=True,
     )
 
+    bio = serializers.CharField(
+        max_length=2000,
+        required=False,
+        allow_blank=True,
+    )
+    
     class Meta:
         model = Profile
         fields = (
             "avatar",
             "bio",
+            "default_page_size",
             "first_name",
             "last_name",
         )
+    
+    def validate_avatar(self, value):
+        try:
+            return norma
 
     @transaction.atomic
     def update(self, instance, validated_data):
         user_data = validated_data.pop("user", {})
 
         if user_data:
+            # QuerySet.update avoids overwriting unrelated User fields
             user = instance.user
 
             for attr, value in user_data.items():
@@ -197,5 +207,4 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
 
         instance.save()
-
         return instance
