@@ -15,6 +15,8 @@ from .models import Profile
 
 from .authentication import user_can_authenticate
 
+from .validators import normalize_avatar
+
 from .services import (
     get_tokens_for_user,
     get_user_response,
@@ -121,13 +123,6 @@ class LoginSerializer(serializers.Serializer):
         
         return {"user": user}
 
-        # tokens = get_tokens_for_user(user)
-
-        # return {
-        #     **tokens,
-        #     "user": get_user_response(user),
-        # }
-
 
 class ProfileSerializer(serializers.ModelSerializer):
     """
@@ -186,25 +181,56 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
     
     def validate_avatar(self, value):
         try:
-            return norma
+            return normalize_avatar(value)
+        except DjangoValidationError as exc:
+            raise DRFValidatorError(list(exc.messages)) from exc
 
     @transaction.atomic
     def update(self, instance, validated_data):
         user_data = validated_data.pop("user", {})
-
         if user_data:
-            # QuerySet.update avoids overwriting unrelated User fields
-            user = instance.user
-
-            for attr, value in user_data.items():
-                setattr(user, attr, value)
-
-            user.save(
-                update_fields=list(user_data.keys())
-            )
-
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-
-        instance.save()
+            # QuerySet.update avoids overwriting unrelated User fields.
+            User.objects.filter(pk=instance.user_id).update(**user_data)
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+        if validated_data:
+            instance.save(update_fields=[*validated_data.keys(), "updated_at"])
+        instance.user.refresh_from_db()
         return instance
+    
+
+class PasswordChangeSerializer(serializers.Serializer):
+    old_password = password_field()
+    new_password = password_field()
+    new_password_confirm = password_field()
+
+    def validate(self, attrs):
+        if attrs['new_password'] != attrs['new_password_confirm']:
+            raise DRFValidatorError(
+                _("The repeated password does not match")
+            )
+        return attrs
+
+
+class EmailRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField(max_length=254)
+
+    def validate_email(self, value):
+        return User.objects.normalize_email(value)
+    
+
+class LinkConfirmSerializer(serializers.Serializer):
+    uid = serializers.CharField(max_length=128)
+    token = serializers.CharField(max_length=256)
+
+
+class PasswordResetConfirmSerializer(LinkConfirmSerializer):
+    new_password = password_field()
+    new_password_confirm = password_field()
+
+    def validate(self, attrs):
+        if attrs['new_password'] != attrs['new_password_confirm']:
+            raise DRFValidatorError(
+                _("The repeated password does not match")
+            ) 
+        return attrs
