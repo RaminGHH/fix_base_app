@@ -3,6 +3,7 @@ from django.conf import settings
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
+from django.utils.translation import gettext_lazy as _
 
 def user_can_authenticate(user):
     return bool(
@@ -14,5 +15,7 @@ class AccountJWTAuthentication(JWTAuthentication):
     def get_user(self, validated_token):
         user = super().get_user(validated_token)
         if not user_can_authenticate(user):
-            raise AuthenticationFailed('ورود به این حساب مجار نیست')
+            raise AuthenticationFailed(
+                _("Access to this account is not permitted")
+            )
         return user
