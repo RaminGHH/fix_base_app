@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.middleware.csrf import get_token, rotate_token
 from django.utils.translation import gettext_lazy as _
+from django.db import transaction
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
@@ -63,6 +64,7 @@ class PublicAccountAPIView(AccountAPIView):
 
 
 class CSRFView(PublicAccountAPIView):
+    
     throttle_scope = "csrf"
 
     def get(self, request):
@@ -80,11 +82,54 @@ class RegisterView(PublicAccountAPIView):
 
 
 class LoginView(PublicAccountAPIView):
-    pass 
+    throttle_scope = "login"
+
+    def post(self, request):
+        serializer = LoginSerializer(
+            data=request.data,
+            context={"request": request},
+        )
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data["user"]
+
+        with transaction.atomic():
+            locked = (
+                User.objects.select_for_update()
+                .filter(pk=user.pk)
+                .first()
+            )
+
+            if locked is None or locked.password != user.password:
+                raise AuthenticationFailed(
+                    _("Login information has changed; please try again")
+                )
+
+            tokens = get_tokens_for_user(locked)
+
+            User.objects.filter(pk=locked.pk).update(
+                last_login=timezone.now()
+            )
+
+        rotate_token(request._request)
+
+        response = Response({
+            "access": tokens["access"],
+            "expires_in": int(
+                api_settings.ACCESS_TOKEN_LIFETIME.total_seconds()
+            ),
+            "user": UserSerializer(locked).data,
+            "csrfToken": get_token(request._request),
+        })
+
+        set_refresh_cookie(response, tokens["refresh"])
+        return response
 
 
 class RefreshView(PublicAccountAPIView):
-    pass 
+    throttle_scope = "refresh"
+
+    def post(self, request):
+        pass
 
 
 class LogoutView(PublicAccountAPIView):

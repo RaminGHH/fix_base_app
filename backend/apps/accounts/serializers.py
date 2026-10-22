@@ -93,7 +93,7 @@ class RegisterSerializer(serializers.Serializer):
 
 class LoginSerializer(serializers.Serializer):
     """
-    Login using email and password.
+    Authenticate a user with email and password
     """
     email = serializers.EmailField()
     password = serializers.CharField(
@@ -102,25 +102,29 @@ class LoginSerializer(serializers.Serializer):
     )
 
     def validate(self, attrs):
+        email = User.objects.normalize_email(attrs["email"])
+
         user = authenticate(
             request=self.context.get("request"),
-            username=User.objects.normalize_email(attrs["email"]),
+            username=email,
             password=attrs["password"],
         )
 
         if user is None:
             raise AuthenticationFailed(
-                {
-                    "detail": _("Email or password is incorrect")
-                }
+                {"detail": _("Email or password is incorrect")}
             )
-        if not user_can_authenticate(user):
+
+        if not user.is_active:
             raise AuthenticationFailed(
-                {
-                    "detail": _("First, verify your email")
-                }
+                {"detail": _("This account is inactive")}
             )
-        
+
+        if not user.is_email_verified:
+            raise AuthenticationFailed(
+                {"detail": _("First, verify your email")}
+            )
+
         return {"user": user}
 
 
